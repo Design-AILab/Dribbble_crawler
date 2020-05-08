@@ -4,6 +4,8 @@
 python3 -m virtualenv venv
 # 安裝成功之後 在主目錄之下啟動
 source venv/bin/activate
+# Install necessary packages with the virtual environment
+pip install -r requirement.txt
 
 # 第一個函數為 栈 的名稱 要與task_executor 中命名的栈名一致才能順利啟動任務喔
 # 第一步：排任務

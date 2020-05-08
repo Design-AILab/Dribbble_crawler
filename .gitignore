@@ -13,3 +13,6 @@ env/
 
 # Python
 __pycache__/
+
+
+account.txt
