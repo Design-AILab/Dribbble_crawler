@@ -14,6 +14,16 @@ headers = {
     "user-agent": ua.random,
 }
 
+
+comment_headers = {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6",
+    "user-agent": ua.random,
+    "x-csrf-token": "LVT78lsj/YV8NDO4UJ2dibwBAM/2b9H3MjAWgz+TxskcmM7EHj0ms7jrcW6fl6gQpeg386UqdstI9p4h8BZOcw==",
+    "x-requested-with": 'XMLHttpRequest'
+}
+
 # res = requests.get(sample_post, headers=headers)
 # source = clean_html(res.content.decode(res.encoding))
 
@@ -49,6 +59,67 @@ def parse_post(url):
     data['short description'] = short_description
 
     # comment section
+    # comments url: https://dribbble.com/shots/11290639-Still-life/comments
+    comment_url = url + '/comments'
+    comment_res = requests.get(comment_url, headers=comment_headers)
+    comment_tree = etree.HTML(comment_res.content)
+    comments_path = "//div[@class='comment-body']/p/text()"
+    comment_nodes = comment_tree.xpath(comments_path)
+    comments = []
+    for comment in comment_nodes:
+        if comment.strip():
+            comments.append(comment)
+    print(comments)
+    data['comments'] = comments
+
+    # tags
+    tag_path = "//div[@class='screenshot-stats']/div[@class='shot-tags']/ol/li//text()"
+    tag_nodes = tree.xpath(tag_path)
+    tags = []
+    for tag in tag_nodes:
+        if tag.strip():
+            tags.append(tag)
+    print(tags)
+    data['tags'] = tags
+
+    # color palette
+    palette_path = "//div[@class='screenshot-stats']/div[@class='shot-colors']/ul/li[@class='color']/a/text()"
+    palette_nodes = tree.xpath(palette_path)
+    color_palettes = []
+    for color in palette_nodes:
+        if color.strip():
+            color_palettes.append(color)
+    print(color_palettes)
+    data['color palette'] = color_palettes
+
+    # likes
+    likes_path = "//div[@class='screenshot-stats']/div[@class='shot-likes']/a/text()"
+    likes_node = tree.xpath(likes_path)[0]
+    # convert string to integer
+    try:
+        print(int(likes_node.split()[0]))
+        data['number of likes'] = int(likes_node.split()[0])
+    except:
+        data['number of likes'] = 0
+
+    # number of saves
+    saves_path = "//div[@class='screenshot-stats']/div[@class='shot-saves']/a/text()"
+    saves_node = tree.xpath(saves_path)[0]
+    try:
+        print(int(saves_node.split()[0]))
+        data['number of saves'] = int(saves_node.split()[0])
+    except:
+        data['number of saves'] = 0
+
+    # date
+    date_path = "//div[@class='screenshot-stats']/div[@class='shot-date']/text()"
+    date_node = tree.xpath(date_path)
+    date = ""
+    for d in date_node:
+        if d.strip():
+            date += d.strip()
+    print(date)
+    data['date'] = date
 
     return data
 
