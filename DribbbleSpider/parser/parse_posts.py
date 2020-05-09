@@ -91,11 +91,9 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         # media_path = "//meta"
         media_nodes = tree.xpath(media_path)
         try:
-            print(media_nodes[0].attrib['data-src'])
             data['media file'] = media_nodes[0].attrib['data-src']
         except:
             data['media file'] = None
-            print("Media file not found")
 
         # short description
         desc_path = "//div[@class='shot-desc']//p//text()"
@@ -105,7 +103,6 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
             short_description += d
             # if d.text:
             #     short_description += d.text
-        print(short_description)
         data['short description'] = short_description
 
         # comment section
@@ -119,7 +116,6 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         for comment in comment_nodes:
             if comment.strip():
                 comments.append(comment)
-        print(",".join(comments))
         data['comments'] = comments
 
         # tags
@@ -129,7 +125,6 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         for tag in tag_nodes:
             if tag.strip():
                 tags.append(tag)
-        print(",".join(tags))
         data['tags'] = tags
 
         # color palette
@@ -139,25 +134,22 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         for color in palette_nodes:
             if color.strip():
                 color_palettes.append(color)
-        print(",".join(color_palettes))
         data['color palette'] = color_palettes
 
         # likes
         likes_path = "//div[@class='screenshot-stats']/div[@class='shot-likes']/a/text()"
-        likes_node = tree.xpath(likes_path)[0]
+        likes_node = tree.xpath(likes_path)
         # convert string to integer
         try:
-            print(int(likes_node.split()[0]))
-            data['number of likes'] = int(likes_node.split()[0])
+            data['number of likes'] = int(likes_node[0].split()[0])
         except:
             data['number of likes'] = 0
 
         # number of saves
         saves_path = "//div[@class='screenshot-stats']/div[@class='shot-saves']/a/text()"
-        saves_node = tree.xpath(saves_path)[0]
+        saves_node = tree.xpath(saves_path)
         try:
-            print(int(saves_node.split()[0]))
-            data['number of saves'] = int(saves_node.split()[0])
+            data['number of saves'] = int(saves_node[0].split()[0])
         except:
             data['number of saves'] = 0
 

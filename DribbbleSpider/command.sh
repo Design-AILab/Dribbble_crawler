@@ -15,5 +15,12 @@ mrq-run --queue taskexecutor task_executor.Execute_Crawl
 # mrq-worker 第一個函數也為 栈 的名稱， --greenlet 是worker 數 這裡都先定義為一個，可是可以根據需求更改增加
 # 每個任務種類都會有一個要定義的栈，同樣的也需要一個mrq-worker
 # 在這個步驟要講所有的mrq-worker啟動所有種類的任務才能被完成
-mrq-worker taskexecutor --greenlet 1 & mrq-worker crawl_patents --greenlet 1 & mrq-worker parse_patents --greenlet 1 &
+mrq-worker taskexecutor --greenlet 1 & mrq-worker crawl_designs --greenlet 1 & mrq-worker parse_designs --greenlet 1 &
 # last worker works on the default queue, in charge of taking care of extraneous tasks on the dashboard
+
+# check and kill processes
+ps 
+ps -ef|grep mrq
+
+kill <PID>
+
