@@ -12,7 +12,7 @@ from fake_useragent import UserAgent
 import traceback
 from datetime import datetime
 
-from _dber.pg_orm import Content
+from _dber.pg_orm import Design
 from _dber.config import session
 
 import os
@@ -24,22 +24,22 @@ sys.path.insert(2, os.path.abspath(os.getcwd()+'../../../'))
 sys.path.insert(3, os.path.abspath(os.getcwd()+'../../../../'))
 
 
-class USPTOParser(Task):  # make sure you give it a name :) 記得給parser一個名字呦
+class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser一個名字呦
     def run(self, params):
         '''
         Run parser
         parser任務主要是負責解析spider爬下來的源碼，並將其存入數據庫
         '''
-        url = params['patent_url']
+        url = params['design_url']
         # retrieve info
-        info = self.retrieve_info(url)
-        for cnt in info:
-            inserted = self.insertData(cnt)
+        dsgn = self.retrieve_info(url)
 
-            if not inserted:
-                queue_job(params['parseTask'],
-                          params,
-                          queue=params['parsequeue'])
+        inserted = self.insertData(dsgn)
+
+        if not inserted:
+            queue_job(params['parseTask'],
+                      params,
+                      queue=params['parsequeue'])
         return True
 
     def run_wrapped(self, params):
@@ -64,54 +64,125 @@ class USPTOParser(Task):  # make sure you give it a name :) 記得給parser一�
         '''
         ua = UserAgent()
         headers = {
-            "user-agent": ua.random
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6",
+            "user-agent": ua.random,
+        }
+
+        comment_headers = {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6",
+            "user-agent": ua.random,
+            "x-csrf-token": "LVT78lsj/YV8NDO4UJ2dibwBAM/2b9H3MjAWgz+TxskcmM7EHj0ms7jrcW6fl6gQpeg386UqdstI9p4h8BZOcw==",
+            "x-requested-with": 'XMLHttpRequest'
         }
         res = requests.get(url, headers=headers)
-        source = clean_html(res.content.decode(res.encoding))
+        #source = clean_html(res.content.decode(res.encoding))
+        source = res.content
         tree = etree.HTML(source)
-        text_path = "//body//br | //body//hr | //body//center//b//i | //body//center//b | //body//p"
-        text_nodes = tree.xpath(text_path)
-        # grab text from br that contains claims, start from "Claim" and end at "Description"
-        claims = []
-        abstract = ""
-        description = ""
-        start = False
-        for i, br_hr in enumerate(text_nodes):
-            if br_hr.text == "Abstract":
-                start = True  # next one
-            if start and br_hr.tag == "p":
-                abstract = br_hr.text.strip()
-                break
-        start = False
-        for i, br_hr in enumerate(text_nodes):
-            if br_hr.text == "Claims":
-                start = True  # there is one horizontal line after Claims
-                text_nodes.pop(i + 1)  # remove that hrs
-                text_nodes.pop(i + 2)  # remove the "what is claimed" string
-            elif start and br_hr.tail:
-                claims.append(br_hr.tail.strip())
-                # if we get a horizontal line we terminate
-                if br_hr.tag == 'hr':
-                    break
-        # collect descriptions
-        start = False
-        for i, br_hr in enumerate(text_nodes[i+1:]):
-            if br_hr.text == "Description":
-                start = True
-                text_nodes.pop(i + 1)  # remove that hrs
-            elif start and br_hr.tail:
-                description += br_hr.tail
-        cnt_lst = []
-        for c in claims:
-            cnt = Content(
-                url=url,
-                write_date=str(datetime.now()),
-                claims=c,
-                abstract=abstract,
-                description=description
-            )
-            cnt_lst.append(cnt)
-        return cnt_lst
+        data = {}
+        # image link
+        data['url'] = url
+        # image/video link
+        media_path = "//div[@class='media-content']//img | //div[@class='media-content']//video"
+        # get from meta
+        # media_path = "//meta"
+        media_nodes = tree.xpath(media_path)
+        try:
+            print(media_nodes[0].attrib['data-src'])
+            data['media file'] = media_nodes[0].attrib['data-src']
+        except:
+            data['media file'] = None
+            print("Media file not found")
+
+        # short description
+        desc_path = "//div[@class='shot-desc']//p//text()"
+        desc_nodes = tree.xpath(desc_path)
+        short_description = ""
+        for d in desc_nodes:
+            short_description += d
+            # if d.text:
+            #     short_description += d.text
+        print(short_description)
+        data['short description'] = short_description
+
+        # comment section
+        # comments url: https://dribbble.com/shots/11290639-Still-life/comments
+        comment_url = url + '/comments'
+        comment_res = requests.get(comment_url, headers=comment_headers)
+        comment_tree = etree.HTML(comment_res.content)
+        comments_path = "//div[@class='comment-body']/p/text()"
+        comment_nodes = comment_tree.xpath(comments_path)
+        comments = []
+        for comment in comment_nodes:
+            if comment.strip():
+                comments.append(comment)
+        print(",".join(comments))
+        data['comments'] = comments
+
+        # tags
+        tag_path = "//div[@class='screenshot-stats']/div[@class='shot-tags']/ol/li//text()"
+        tag_nodes = tree.xpath(tag_path)
+        tags = []
+        for tag in tag_nodes:
+            if tag.strip():
+                tags.append(tag)
+        print(",".join(tags))
+        data['tags'] = tags
+
+        # color palette
+        palette_path = "//div[@class='screenshot-stats']/div[@class='shot-colors']/ul/li[@class='color']/a/text()"
+        palette_nodes = tree.xpath(palette_path)
+        color_palettes = []
+        for color in palette_nodes:
+            if color.strip():
+                color_palettes.append(color)
+        print(",".join(color_palettes))
+        data['color palette'] = color_palettes
+
+        # likes
+        likes_path = "//div[@class='screenshot-stats']/div[@class='shot-likes']/a/text()"
+        likes_node = tree.xpath(likes_path)[0]
+        # convert string to integer
+        try:
+            print(int(likes_node.split()[0]))
+            data['number of likes'] = int(likes_node.split()[0])
+        except:
+            data['number of likes'] = 0
+
+        # number of saves
+        saves_path = "//div[@class='screenshot-stats']/div[@class='shot-saves']/a/text()"
+        saves_node = tree.xpath(saves_path)[0]
+        try:
+            print(int(saves_node.split()[0]))
+            data['number of saves'] = int(saves_node.split()[0])
+        except:
+            data['number of saves'] = 0
+
+        # date
+        date_path = "//div[@class='screenshot-stats']/div[@class='shot-date']/text()"
+        date_node = tree.xpath(date_path)
+        date = ""
+        for d in date_node:
+            if d.strip():
+                date += d.strip()
+        print(date)
+        data['date'] = date
+        dsgn = Design(
+            url=data['url'],
+            media_path=data['media file'],
+            description=data['short description'],
+            comments=data['comments'],
+            tags=data['tags'],
+            color_palette=data['color palette'],
+            likes=data['number of likes'],
+            saves=data['number of saves'],
+            date=data['date'],
+            write_date=str(datetime.now())
+        )
+        return dsgn
 
     def insertData(self, cnt):
         '''

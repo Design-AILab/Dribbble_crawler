@@ -8,11 +8,11 @@ Settings for destination for where the data will be saved
 
 import psycopg2
 # Address to external database where data should be stored
-# engine = create_engine(
-#    'postgresql+psycopg2://postgres@localhost:5432/Capstone')
+engine = create_engine(
+    'postgresql+psycopg2://postgres@localhost:5432/AILab')
 
 # local testing database 測試用本端數據庫
-engine = create_engine('sqlite:///test.db', echo=False)
+# engine = create_engine('sqlite:///test.db', echo=False)
 
 # create tables 開啟pg_orm 中的所有的表
 Base.metadata.create_all(engine)

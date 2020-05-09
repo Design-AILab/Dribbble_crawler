@@ -3,7 +3,7 @@ Task 1: Conduct crawling
 這是程式中爬蟲的部分 (與網頁連結的部分)
 '''
 from _dber.config import session
-from _dber.pg_orm import Content
+from _dber.pg_orm import Design
 from datetime import datetime
 import requests
 import traceback
@@ -14,13 +14,14 @@ from lxml import etree
 import time
 
 from fake_useragent import UserAgent
+from lxml.html.clean import clean_html
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.getcwd()+'../../../'))
 sys.path.insert(1, os.path.abspath(os.getcwd()+'../../../../'))
 
 
-class USPTOSpider(Task):  # give ur spider a cute name ;) 給spider一個好聽的名字吧
+class DribbbleSpider(Task):  # give ur spider a cute name ;) 給spider一個好聽的名字吧
     def run(self, params):
         '''
         Conduct Crawling and proceed to the next task
@@ -31,17 +32,17 @@ class USPTOSpider(Task):  # give ur spider a cute name ;) 給spider一個好聽�
         '''
         url = params['url']  # link to the search result page
         links = self.retrieve_urls(url)  # all links
-        for patent in links:
+        for link in links:
             # check if the patent already exist in our database
             sess = session()
-            added = sess.query(Content).filter_by(url=patent).first()
+            added = sess.query(Design).filter_by(url=link).first()
             sess.commit()
             sess.close()
-            if added:  # we don't need to add the patents again
+            if added:
                 continue
             else:
                 # pass it to the parser
-                params['patent_url'] = patent
+                params['design_url'] = link
                 self.parser_job(params,
                                 fpath=params['parseTask'],
                                 nqueue=params['parsequeue'])
@@ -65,34 +66,34 @@ class USPTOSpider(Task):  # give ur spider a cute name ;) 給spider一個好聽�
             "user-agent": ua.random
         }
         res = requests.get(url, headers=headers)
-        source = res.content
+        source = clean_html(res.content.decode(res.encoding))
         tree = etree.HTML(source)
-        a_path = "//td[@valign='top']/a"
-        a_nodes = tree.xpath(a_path)
+        link_path = "//div[@id = 'main']//a[contains(@class,'dribbble-link')]"
+        link_nodes = tree.xpath(link_path)
         url = []
-        for a in a_nodes:
+        for a in link_nodes:
             a_url = a.attrib['href']
             if a_url not in url:
-                url.append("http://patft.uspto.gov/"+a_url)
+                url.append("https://dribbble.com"+a_url)
         return url
 
-    def insertData(self, ps):
-        '''
-        Insert data into PageSource
-        這個功能是將源碼存入數據庫中
-        '''
-        try:
-            sess = session()
-            sess.add(ps)
-            sess.commit()
-            return True
-        except Exception as e:
-            sess.rollback()
-            traceback.print_exc()
-            print(e)
-            return False
-        finally:
-            sess.close()
+    # def insertData(self, ps):
+    #     '''
+    #     Insert data into PageSource
+    #     這個功能是將源碼存入數據庫中
+    #     '''
+    #     try:
+    #         sess = session()
+    #         sess.add(ps)
+    #         sess.commit()
+    #         return True
+    #     except Exception as e:
+    #         sess.rollback()
+    #         traceback.print_exc()
+    #         print(e)
+    #         return False
+    #     finally:
+    #         sess.close()
 
     def parser_job(self, params, fpath=None, nqueue=None):
         '''

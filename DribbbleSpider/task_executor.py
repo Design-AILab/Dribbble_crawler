@@ -35,10 +35,10 @@ class Execute_Crawl(Task):
         # 如果有更改栈名請於此更改
         args = {
             'url': url,
-            'spiderTask': 'spider.spider.USPTOSpider',
-            'spiderqueue': 'crawl_patents',
-            'parseTask': 'parser.parse_posts.USPTOParser',
-            'parsequeue': 'parse_patents'
+            'spiderTask': 'spider.spider.DribbbleSpider',
+            'spiderqueue': 'crawl_designs',
+            'parseTask': 'parser.parse_posts.DribbbleParser',
+            'parsequeue': 'parse_designs'
         }
         # task = ['spider.spider_crawl.LcSpider']
         # command = ['mrq-run'] + task + args
@@ -53,9 +53,9 @@ class Execute_Crawl(Task):
         # 我們在這裡開始分發任務
         # assign the CPC classification here
         # classification = "H01L"
-        pages = 1000  # get first 1000 pages of patents
+        pages = 50  # get 50 pages
         for page in range(1, pages+1):
-            url = f"http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO2&Sect2=HITOFF&u=%2Fnetahtml%2FPTO%2Fsearch-adv.htm&r=0&f=S&l=50&d=PTXT&OS=CPCL%2FH01L&RS=CPCL%2FH01L&Query=CPCL%2FH01L&TD=439972&Srch1=H01L.CPCL.&NextList{page}=Next+50+Hits"
+            url = f"https://dribbble.com/?page={page}"
             self.exec_push_work(url)
 
     def run_wrapped(self, params):

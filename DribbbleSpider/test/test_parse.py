@@ -69,7 +69,7 @@ def parse_post(url):
     for comment in comment_nodes:
         if comment.strip():
             comments.append(comment)
-    print(comments)
+    print(",".join(comments))
     data['comments'] = comments
 
     # tags
@@ -79,7 +79,7 @@ def parse_post(url):
     for tag in tag_nodes:
         if tag.strip():
             tags.append(tag)
-    print(tags)
+    print(",".join(tags))
     data['tags'] = tags
 
     # color palette
@@ -89,7 +89,7 @@ def parse_post(url):
     for color in palette_nodes:
         if color.strip():
             color_palettes.append(color)
-    print(color_palettes)
+    print(",".join(color_palettes))
     data['color palette'] = color_palettes
 
     # likes

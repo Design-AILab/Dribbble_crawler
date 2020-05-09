@@ -1,6 +1,6 @@
 # table models
 # reference samePost.py
-from sqlalchemy import Column, Integer, String, Table, Text, Date, Boolean, Time, TIMESTAMP, VARCHAR, func
+from sqlalchemy import Column, Integer, String, Table, Text, Date, Boolean, Time, TIMESTAMP, VARCHAR, func, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 metadata = Base.metadata
@@ -34,9 +34,14 @@ class Design(Base):
     __table_args__ = {"useexisting": False}
     uid = Column(Integer, primary_key=True, autoincrement=True)
     url = Column(String, nullable=True)
-    claims = Column(String)
-    abstract = Column(String)
+    media_path = Column(String)
     description = Column(String)
+    comments = Column(ARRAY(String))
+    tags = Column(ARRAY(String))
+    color_palette = Column(ARRAY(String))
+    likes = Column(Integer)
+    saves = Column(Integer)
+    date = Column(String)
     collection_time = Column(TIMESTAMP, nullable=True,
                              server_default=func.now())
     write_date = Column(String)
