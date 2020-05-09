@@ -28,9 +28,22 @@ class PageSource(Base):
         return f"USPTO Source(Url: '{self.url}', Write Date: '{self.write_date})'"
 '''
 
+'''
+Tables:
+All: dribbble_designs
+animation: dribbble_designs_animation
+branding: dribbble_designs_branding
+illustration: dribbble_designs_illustration
+mobile: dribbble_designs_mobile
+print: dribbble_designs_print
+product design: dribbble_designs_product_design
+typography: dribbble_designs_typography
+web design: dribbble_designs_web_designs
+'''
+
 
 class Design(Base):
-    __tablename__ = "dribbble_designs"
+    __tablename__ = "dribbble_designs_animation"
     __table_args__ = {"useexisting": False}
     uid = Column(Integer, primary_key=True, autoincrement=True)
     url = Column(String, nullable=True)

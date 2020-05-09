@@ -11,7 +11,7 @@ page = 1
 target_url = f"https://dribbble.com/?page={page}"
 categories = 'animation'
 target2 = f"https://dribbble.com/shots/{categories}/?page={page}"
-# xpath: //*[@class="group shot-thumbnail shot-thumbnail-with-hover-overlay"]/div/a
+#  xpath: //*[@class="group shot-thumbnail shot-thumbnail-with-hover-overlay"]/div/a
 
 
 def grab_design_links(url, headers):

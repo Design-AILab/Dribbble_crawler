@@ -55,7 +55,9 @@ class Execute_Crawl(Task):
         # classification = "H01L"
         pages = 50  # get 50 pages
         for page in range(1, pages+1):
-            url = f"https://dribbble.com/?page={page}"
+            # url = f"https://dribbble.com/?page={page}"
+            # make sure to change table names in pg_orm.py
+            url = f"https://dribbble.com/shots/animation/?page={page}"
             self.exec_push_work(url)
 
     def run_wrapped(self, params):
