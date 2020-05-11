@@ -25,6 +25,7 @@ def parse_post(url, headers):
     - images/media paths: list
     - title: str
     - author: list
+    - author profiles: list
     - description: str
     - comments count: int
     - likes: int

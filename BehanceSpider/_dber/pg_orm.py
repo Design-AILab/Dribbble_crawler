@@ -28,36 +28,25 @@ class PageSource(Base):
         return f"USPTO Source(Url: '{self.url}', Write Date: '{self.write_date})'"
 '''
 
-'''
-Tables:
-All: dribbble_designs
-animation: dribbble_designs_animation
-branding: dribbble_designs_branding
-illustration: dribbble_designs_illustration
-mobile: dribbble_designs_mobile
-print: dribbble_designs_print
-product design: dribbble_designs_product_design
-typography: dribbble_designs_typography
-web design: dribbble_designs_web_designs
-'''
-
 
 class Design(Base):
-    __tablename__ = "dribbble_designs_animation"
+    __tablename__ = "behance_designs"
     __table_args__ = {"useexisting": False}
     uid = Column(Integer, primary_key=True, autoincrement=True)
     url = Column(String, nullable=True)
-    media_path = Column(String)
+    media_path = Column(ARRAY(String))
+    title = Column(String)
+    author = Column(ARRAY(String))
+    author_profiles = Column(ARRAY(String))
     description = Column(String)
-    comments = Column(ARRAY(String))
     tags = Column(ARRAY(String))
-    color_palette = Column(ARRAY(String))
+    creative_fields = Column(ARRAY(String))
     likes = Column(Integer)
-    saves = Column(Integer)
+    comments = Column(Integer)
     date = Column(String)
     collection_time = Column(TIMESTAMP, nullable=True,
                              server_default=func.now())
     write_date = Column(String)
 
     def __repr__(self):
-        return f"Dribbble Content(Title: '{self.title}', Write Date: '{self.write_date}')"
+        return f"Behance Posts(Title: '{self.title}', Write Date: '{self.write_date}')"
