@@ -2,10 +2,12 @@ import requests
 from fake_useragent import UserAgent
 from lxml import etree
 from lxml.html.clean import clean_html
-
+import json
+from datetime import datetime
 # once we have links for individual pages, extract the information from the pages
 sample_post = 'https://www.behance.net/gallery/96824657/A-selection-of-personal-illustrations'
 sample_post2 = 'https://www.behance.net/gallery/81095977/Hilton-House-Brand-Identity'
+sample_post3 = 'https://www.behance.net/gallery/94300327/Tourne-Qubec-Cinma'
 ua = UserAgent()
 post_headers = {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -24,9 +26,8 @@ def parse_post(url, headers):
     - title: str
     - author: list
     - description: str
-    - comments: list
+    - comments count: int
     - likes: int
-    - views: int
     - creative fields: list
     - tag: list
     - published date: str
@@ -34,11 +35,76 @@ def parse_post(url, headers):
     res = requests.get(url, headers=headers)
     #source = clean_html(res.content.decode(res.encoding))
     source = res.content
-    print(source)
+    tree = etree.HTML(source)
+
+    data = {}
+    data['url'] = url
+    # images or media paths
+    media_path = "//div[@id='project-modules']//img"
+    media_nodes = tree.xpath(media_path)
+    media_files = []
+    if media_nodes:
+        for node in media_nodes:
+            media_files.append(node.attrib['src'])
+    data['media paths'] = media_files
+
+    # title
+    title_path = "//meta[@property='og:title']"
+    title_node = tree.xpath(title_path)
+    if title_node:
+        title = title_node[0].attrib['content']
+        data['title'] = title
+    else:
+        data['title'] = ''
+    # author
+    authors_path = "//div[@class='ProjectOwnersInfo-individualProfile-19h']//div[contains(@class, 'ProjectOwnersInfo-userInfo-2WK')]/a"
+    authors_nodes = tree.xpath(authors_path)
+    authors = []
+    authors_url = []
+    try:
+        for node in authors_nodes:
+            if node.text and node.text not in authors:
+                authors.append(node.text)
+                authors_url.append(node.attrib['href'])
+    except:
+        pass
+    data['authors'] = authors
+    data['authors profile'] = authors_url
+
+    # json
+    json_path = "//script[@id='beconfig-store_state']/text()"
+    json_node = tree.xpath(json_path)
+    json_data = json.loads(json_node[0])
+    # for key, value in json_data['project']['project'].items():
+    #     print(key)
+    # print(json_data['project']['project']['tags'])
+    # # for key, value in json_data['project']['project'].items():
+    # #     print(key)
+    # # print(json_data['project']['commentCount'])
+    # description
+    data['description'] = json_data['project']['project']['description']
+    # number of comments
+    data['comment counts'] = json_data['project']['commentCount']
+    # number of likes
+    data['number of likes'] = json_data['project']['appreciationCount']
+    # publish date
+    data['date'] = datetime.fromtimestamp(
+        json_data['project']['project']['published_on']).strftime('%m/%d/%Y')
+    # creative fields
+    c_fields = []
+    for field in json_data['project']['project']['fields']:
+        c_fields.append(field['name'])
+    data['creative fields'] = c_fields
+    # tags
+    tags = []
+    for tag in json_data['project']['project']['tags']:
+        tags.append(tag['title'])
+    data['tags'] = tags
+    return data
 
 
-parse_post(sample_post, post_headers)
-
+info = parse_post(sample_post, post_headers)
+print(info)
 # comment_headers = {
 #     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 #     "accept-encoding": "gzip, deflate, br",
