@@ -32,9 +32,17 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         '''
         url = params['design_url']
         # retrieve info
-        dsgn = self.retrieve_info(url)
+        data, dsgn = self.retrieve_info(url)
 
-        inserted = self.insertData(dsgn)
+        sess = session()
+        added = sess.query(Design).filter_by(url=url).first()
+        sess.commit()
+        sess.close()
+        if added:
+            # update
+            inserted = self.updateData(data)
+        else:
+            inserted = self.insertData(dsgn)
 
         if not inserted:
             queue_job(params['parseTask'],
@@ -174,7 +182,7 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
             date=data['date'],
             write_date=str(datetime.now())
         )
-        return dsgn
+        return data, dsgn
 
     def insertData(self, cnt):
         '''
@@ -184,6 +192,32 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         try:
             sess = session()
             sess.add(cnt)
+            sess.commit()
+            return True
+        except Exception as e:
+            sess.rollback()
+            traceback.print_exc()
+            print(e)
+            return False
+        finally:
+            sess.close()
+
+    def updateData(self, info):
+        '''
+        Update data
+        '''
+        sess = session()
+        try:
+            dsgn = sess.query(Design).filter_by(url=info['url']).first()
+            dsgn.media_path = info['media file']
+            dsgn.write_date = datetime.now()
+            dsgn.description = info['short description']
+            dsgn.comments = info['comments']
+            dsgn.tags = info['tags']
+            dsgn.color_palette = info['color palette']
+            dsgn.likes = info['number of likes']
+            dsgn.saves = info['number of saves']
+            dsgn.date = info['date']
             sess.commit()
             return True
         except Exception as e:

@@ -33,19 +33,25 @@ class DribbbleSpider(Task):  # give ur spider a cute name ;) 給spider一個好�
         url = params['url']  # link to the search result page
         links = self.retrieve_urls(url)  # all links
         for link in links:
-            # check if the patent already exist in our database
-            sess = session()
-            added = sess.query(Design).filter_by(url=link).first()
-            sess.commit()
-            sess.close()
-            if added:
-                continue
-            else:
-                # pass it to the parser
-                params['design_url'] = link
-                self.parser_job(params,
-                                fpath=params['parseTask'],
-                                nqueue=params['parsequeue'])
+            #     # check if the patent already exist in our database
+            #     sess = session()
+            #     added = sess.query(Design).filter_by(url=link).first()
+            #     sess.commit()
+            #     sess.close()
+            #     if added:
+            #         continue
+            #     else:
+            #         # pass it to the parser
+            #         params['design_url'] = link
+            #         self.parser_job(params,
+            #                         fpath=params['parseTask'],
+            #                         nqueue=params['parsequeue'])
+
+            # to update existing entries
+            params['design_url'] = link
+            self.parser_job(params,
+                            fpath=params['parseTask'],
+                            nqueue=params['parsequeue'])
         return True
 
     def run_wrapped(self, params):
