@@ -105,7 +105,8 @@ def parse_post(url, headers):
 
 
 info = parse_post(sample_post, post_headers)
-print(info)
+for k, v in info.items():
+    print(k)
 # comment_headers = {
 #     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 #     "accept-encoding": "gzip, deflate, br",
