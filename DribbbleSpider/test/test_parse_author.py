@@ -37,35 +37,35 @@ def crawl_author_info(url, headers):
     shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'shots')]/a/span[@class='count']/text()"
     shots_node = tree.xpath(shots_path)
     print(shots_node[0])
-    data['shots'] = shots_node[0]
+    data['shots'] = int(shots_node[0].replace(",", ""))
 
     # number of projects
     projects_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'projects')]/a/span[@class='count']/text()"
     projects_node = tree.xpath(projects_path)
     print(projects_node[0])
-    data['projects'] = projects_node[0]
+    data['projects'] = int(projects_node[0].replace(",", ""))
 
     # number of collections
     collections_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'collections')]/a/span[@class='count']/text()"
     collections_node = tree.xpath(collections_path)
     print(collections_node[0])
-    data['collections'] = collections_node[0]
+    data['collections'] = int(collections_node[0].replace(",", ""))
 
     # number of liked shots
     liked_shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'liked shots')]/a/span[@class='count']/text()"
     liked_shots_node = tree.xpath(liked_shots_path)
     print(liked_shots_node[0])
-    data['liked shots'] = liked_shots_node[0]
+    data['liked shots'] = int(liked_shots_node[0].replace(",", ""))
 
     # number of followers, number of following, number of tags
     stats_path = "//div[@class='about-content-main']//section[contains(@class, 'profile-stats-section')]/a/span[contains(@class,'count')]/text()"
     # it's followers, following, and then tags
     stats_node = tree.xpath(stats_path)
     print(stats_node)
-    data['followers'] = stats_node[0]
-    data['following'] = stats_node[1]
-    data['tags'] = stats_node[2]
+    data['followers'] = int(stats_node[0].replace(",", ""))
+    data['following'] = int(stats_node[1].replace(",", ""))
+    data['tags'] = int(stats_node[2].replace(",", ""))
     return data
 
 
-crawl_author_info(sample_author1, headers)
+print(crawl_author_info(sample_author1, headers))

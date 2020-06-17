@@ -39,11 +39,14 @@ print: dribbble_designs_print
 product design: dribbble_designs_product_design
 typography: dribbble_designs_typography
 web design: dribbble_designs_web_designs
+
+New: add info with authors
+dribbble_designs_with_authors
 '''
 
 
 class Design(Base):
-    __tablename__ = "dribbble_designs_animation"
+    __tablename__ = "dribbble_designs_with_authors"
     __table_args__ = {"useexisting": False}
     uid = Column(Integer, primary_key=True, autoincrement=True)
     url = Column(String, nullable=True)
@@ -55,6 +58,16 @@ class Design(Base):
     likes = Column(Integer)
     saves = Column(Integer)
     date = Column(String)
+    # authors statistics
+    author_url = Column(String)
+    shots = Column(Integer)
+    projects = Column(Integer)
+    collections = Column(Integer)
+    liked_shots = Column(Integer)
+    followers = Column(Integer)
+    following = Column(Integer)
+    author_tags = Column(Integer)
+
     collection_time = Column(TIMESTAMP, nullable=True,
                              server_default=func.now())
     write_date = Column(String)

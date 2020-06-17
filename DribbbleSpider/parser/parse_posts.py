@@ -32,8 +32,30 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         '''
         url = params['design_url']
         # retrieve info
-        data, dsgn = self.retrieve_info(url)
-
+        data = self.retrieve_info(url)
+        # retrieve author's info
+        data = self.retrieve_author_info(
+            data['author url'] + '/about', data)
+        dsgn = Design(
+            url=data['url'],
+            media_path=data['media file'],
+            description=data['short description'],
+            comments=data['comments'],
+            tags=data['tags'],
+            color_palette=data['color palette'],
+            likes=data['number of likes'],
+            saves=data['number of saves'],
+            date=data['date'],
+            author_url=data['author url'],
+            shots=data['shots'],
+            projects=data['projects'],
+            collections=data['collections'],
+            liked_shots=data['liked shots'],
+            followers=data['followers'],
+            following=data['following'],
+            author_tags=data['author tags'],
+            write_date=str(datetime.now())
+        )
         sess = session()
         added = sess.query(Design).filter_by(url=url).first()
         sess.commit()
@@ -103,6 +125,12 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         except:
             data['media file'] = None
 
+        # author url
+        author_path = "//header[contains(@class,'shot-header')]//div[@class='slat-details']/a[@class='hoverable url']"
+        author_nodes = tree.xpath(author_path)
+        data['author url'] = "https://dribbble.com" + \
+            author_nodes[0].attrib['href']
+
         # short description
         desc_path = "//div[@class='shot-desc']//p//text()"
         desc_nodes = tree.xpath(desc_path)
@@ -170,19 +198,60 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
                 date += d.strip()
         print(date)
         data['date'] = date
-        dsgn = Design(
-            url=data['url'],
-            media_path=data['media file'],
-            description=data['short description'],
-            comments=data['comments'],
-            tags=data['tags'],
-            color_palette=data['color palette'],
-            likes=data['number of likes'],
-            saves=data['number of saves'],
-            date=data['date'],
-            write_date=str(datetime.now())
-        )
-        return data, dsgn
+        # dsgn = Design(
+        #     url=data['url'],
+        #     media_path=data['media file'],
+        #     description=data['short description'],
+        #     comments=data['comments'],
+        #     tags=data['tags'],
+        #     color_palette=data['color palette'],
+        #     likes=data['number of likes'],
+        #     saves=data['number of saves'],
+        #     date=data['date'],
+        #     write_date=str(datetime.now())
+        # )
+        return data
+
+    def retrieve_author_info(self, url, data):
+        ua = UserAgent()
+        headers = {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6",
+            "user-agent": ua.random,
+        }
+        res = requests.get(url, headers=headers)
+        source = res.content
+        tree = etree.HTML(source)
+
+        # number of shots
+        shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'shots')]/a/span[@class='count']/text()"
+        shots_node = tree.xpath(shots_path)
+        data['shots'] = int(shots_node[0].replace(",", ""))
+
+        # number of projects
+        projects_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'projects')]/a/span[@class='count']/text()"
+        projects_node = tree.xpath(projects_path)
+        data['projects'] = int(projects_node[0].replace(",", ""))
+
+        # number of collections
+        collections_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'collections')]/a/span[@class='count']/text()"
+        collections_node = tree.xpath(collections_path)
+        data['collections'] = int(collections_node[0].replace(",", ""))
+
+        # number of liked shots
+        liked_shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'liked shots')]/a/span[@class='count']/text()"
+        liked_shots_node = tree.xpath(liked_shots_path)
+        data['liked shots'] = int(liked_shots_node[0].replace(",", ""))
+
+        # number of followers, number of following, number of tags
+        stats_path = "//div[@class='about-content-main']//section[contains(@class, 'profile-stats-section')]/a/span[contains(@class,'count')]/text()"
+        # it's followers, following, and then tags
+        stats_node = tree.xpath(stats_path)
+        data['followers'] = int(stats_node[0].replace(",", ""))
+        data['following'] = int(stats_node[1].replace(",", ""))
+        data['author tags'] = int(stats_node[2].replace(",", ""))
+        return data
 
     def insertData(self, cnt):
         '''
@@ -218,6 +287,14 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
             dsgn.likes = info['number of likes']
             dsgn.saves = info['number of saves']
             dsgn.date = info['date']
+            dsgn.author_url = info['author url']
+            dsgn.shots = info['shots']
+            dsgn.projects = info['projects']
+            dsgn.collections = info['collections']
+            dsgn.liked_shots = info['liked shots']
+            dsgn.followers = info['followers']
+            dsgn.following = info['following']
+            dsgn.author_tags = info['author tags']
             sess.commit()
             return True
         except Exception as e:
