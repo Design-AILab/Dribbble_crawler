@@ -6,6 +6,7 @@ from lxml.html.clean import clean_html
 # once we have links for individual pages, extract the information from the pages
 sample_post = "http://dribbble.com/shots/11322751-Washing-machine"
 sample_post2 = "http://dribbble.com/shots/11290639-Still-life"
+sample_post3 = "https://dribbble.com/shots/11780117-2-Reading"
 ua = UserAgent()
 headers = {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -47,6 +48,12 @@ def parse_post(url):
     except:
         print("Media file not found")
 
+    # author url
+    author_path = "//header[contains(@class,'shot-header')]//div[@class='slat-details']/a[@class='hoverable url']"
+    author_nodes = tree.xpath(author_path)
+    print("https://dribbble.com" + author_nodes[0].attrib['href'])
+    data['author_url'] = "https://dribbble.com" + \
+        author_nodes[0].attrib['href']
     # short description
     desc_path = "//div[@class='shot-desc']//p//text()"
     desc_nodes = tree.xpath(desc_path)
@@ -124,4 +131,4 @@ def parse_post(url):
     return data
 
 
-parse_post(sample_post)
+parse_post(sample_post3)

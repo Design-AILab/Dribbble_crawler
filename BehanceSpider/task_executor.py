@@ -53,8 +53,9 @@ class Execute_Crawl(Task):
         # 我們在這裡開始分發任務
         # assign the CPC classification here
         # classification = "H01L"
-        pages = 4000  # get 50 pages
-        for page in range(1, pages+1, 48):
+        start_page = 4000
+        end_page = 6000
+        for page in range(start_page, end_page+1, 48):
             url = f"https://www.behance.net/v2/discover/?ordinal={page}"
             self.exec_push_work(url)
 
