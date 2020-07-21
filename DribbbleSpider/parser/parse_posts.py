@@ -225,32 +225,49 @@ class DribbbleParser(Task):  # make sure you give it a name :) 記得給parser�
         tree = etree.HTML(source)
 
         # number of shots
-        shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'shots')]/a/span[@class='count']/text()"
-        shots_node = tree.xpath(shots_path)
-        data['shots'] = int(shots_node[0].replace(",", ""))
+        try:
+            shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'shots')]/a/span[@class='count']/text()"
+            shots_node = tree.xpath(shots_path)
+            data['shots'] = int(shots_node[0].replace(",", ""))
+        except:
+            data['shots'] = 0
 
         # number of projects
-        projects_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'projects')]/a/span[@class='count']/text()"
-        projects_node = tree.xpath(projects_path)
-        data['projects'] = int(projects_node[0].replace(",", ""))
+        try:
+            projects_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'projects')]/a/span[@class='count']/text()"
+            projects_node = tree.xpath(projects_path)
+            data['projects'] = int(projects_node[0].replace(",", ""))
+        except:
+            data['projects'] = 0
 
         # number of collections
-        collections_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'collections')]/a/span[@class='count']/text()"
-        collections_node = tree.xpath(collections_path)
-        data['collections'] = int(collections_node[0].replace(",", ""))
+        try:
+            collections_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'collections')]/a/span[@class='count']/text()"
+            collections_node = tree.xpath(collections_path)
+            data['collections'] = int(collections_node[0].replace(",", ""))
+        except:
+            data['collections'] = 0
 
         # number of liked shots
-        liked_shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'liked shots')]/a/span[@class='count']/text()"
-        liked_shots_node = tree.xpath(liked_shots_path)
-        data['liked shots'] = int(liked_shots_node[0].replace(",", ""))
+        try:
+            liked_shots_path = "//ul[@class='scrolling-subnav-list']/li[contains(@class, 'liked shots')]/a/span[@class='count']/text()"
+            liked_shots_node = tree.xpath(liked_shots_path)
+            data['liked shots'] = int(liked_shots_node[0].replace(",", ""))
+        except:
+            data['liked shots'] = 0
 
         # number of followers, number of following, number of tags
-        stats_path = "//div[@class='about-content-main']//section[contains(@class, 'profile-stats-section')]/a/span[contains(@class,'count')]/text()"
-        # it's followers, following, and then tags
-        stats_node = tree.xpath(stats_path)
-        data['followers'] = int(stats_node[0].replace(",", ""))
-        data['following'] = int(stats_node[1].replace(",", ""))
-        data['author tags'] = int(stats_node[2].replace(",", ""))
+        try:
+            stats_path = "//div[@class='about-content-main']//section[contains(@class, 'profile-stats-section')]/a/span[contains(@class,'count')]/text()"
+            # it's followers, following, and then tags
+            stats_node = tree.xpath(stats_path)
+            data['followers'] = int(stats_node[0].replace(",", ""))
+            data['following'] = int(stats_node[1].replace(",", ""))
+            data['author tags'] = int(stats_node[2].replace(",", ""))
+        except:
+            data['followers'] = 0
+            data['following'] = 0
+            data['author tags'] = 0
         return data
 
     def insertData(self, cnt):
